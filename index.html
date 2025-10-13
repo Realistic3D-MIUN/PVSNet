@@ -1,13 +1,553 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Page</title>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Real-Time Position-Aware View Synthesis from Single-View Input.">
+  <meta name="keywords" content="PVSNet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PVSNet</title>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"/>
 </head>
 <body>
 
-    <h1>Test</h1>
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://3zadessg.github.io">
+      <span class="icon">
+          <i class="fas fa-home"></i>
+      </span>
+      </a>
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          More Research
+        </a>
+        <div class="navbar-dropdown">
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/Research/LFSphereNet/LFSphereNet.html">
+            LFSphereNet
+          </a>
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/Research/SLFDB/SLFDB.html">
+            SLFDB
+          </a>
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/Research/VISTA_Q_ToolKit/index.html">
+            VISTA-Q-ToolKit
+          </a>
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/Research/RT_MPINet/index.html">
+            RT-MPINet
+          </a>
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/PVSNet">
+            PVSNet
+          </a>
+          <a class="navbar-item" href="https://realistic3d-miun.github.io/PVSDNet">
+            PVSDNet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
 
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Real-Time Position-Aware View Synthesis from Single-View Input</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://3zadessg.github.io/">Manu Gond</a><sup>1,2</sup>,</span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=S44_XWsAAAAJ&hl=en">Emin Zerman</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://scholar.google.de/citations?user=qv9Wg2YAAAAJ&hl=de">Sebastian Knorr</a><sup>3</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=EEMg1vMAAAAJ&hl=en">Mårten Sjöström</a><sup>1</sup>,
+            </span>
+          </div>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Mid Sweden University, Sweden</span>
+            <span class="author-block"><sup>2</sup>Technical University of Berlin, Germany</span>
+            <span class="author-block"><sup>3</sup>HTW Berlin - University of Applied Sciences, Germany</span>
+          </div>
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper (Comping Soon)</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2412.14005"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper (arXiv)</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (coming soon)</span>
+                  </a>
+              </span>
+              <!-- Dataset Link. -->
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data (coming soon)</span>
+                  </a>
+              </span>
+              <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-bolt"></i>
+                  </span>
+                  <span>Huggingface Demo (Coming Soon)</span>
+                  </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video id="teaser" autoplay muted loop playsinline height="100%">
+        <source src="./static/videos/Flowers_PVSNet.mp4"
+                type="video/mp4">
+      </video>
+      <h2 class="subtitle has-text-centered">
+        <span class="dnerf">PVSNet</span> Generates Novel Views from Single Image
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item item">
+          <video poster="" id="epfl_1" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/EPFL_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item">
+          <video poster="" id="epfl_fence" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/EPFL_Fence_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item">
+          <video poster="" id="epfl_fountain" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/EPFL_Fountain_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item" style="width: 256px;">
+          <video poster="" id="coco_23_256" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/COCO_23_256_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item" style="width: 256px;">
+          <video poster="" id="coco_124_256" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/COCO_124_256_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item" style="width: 256px;">
+          <video poster="" id="coco_468_256" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/COCO_468_256_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item" style="width: 256px;">
+          <video poster="" id="coco_737_256" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/COCO_737_256_PVSNet.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            We present a lightweight, position-aware network designed for real-time novel view synthesis from a single input image. Unlike existing MPI or Image-Based methods which utlizie an explicit warping operator, we directly query the final views from the network itself. Our network inference is real-time making it suitable for fine-tuning on domain specific applications for live feeds.
+          </p>
+      <img src="./static/images/PVSNet_Architecture.svg"
+      class="interpolation-image"/>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+
+  <div class="container is-max-desktop">
+    <!-- Video Demo. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Performance on In-the-wild images without fine tuninig</h2>
+        <video id="Parallax_inTheWild" autoplay controls muted loop playsinline height="100%">
+          <source src="./static/videos/Wild.mp4"
+                  type="video/mp4">
+        </video>
+      </div>
+    </div>
+    <!--/ Video Demo. -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered">
+
+      <!-- Visual Effects. -->
+      <div class="column">
+        <div class="content">
+          <h2 class="title is-3">Light Field Reconstruction Example 1</h2>
+          <p>
+            Flowers Dataset
+          </p>
+          <div class="image-comparison-wrapper" style="position: relative; width: 512px; height: 352px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/Flowers_PVSNet.png" />
+              <img slot="second" src="./static/images/Flowers_GT.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ground Truth</span>
+          </div>
+        </div>
+      </div>
+      <!--/ Visual Effects. -->
+
+      <!-- Matting. -->
+      <div class="column">
+        <h2 class="title is-3">Light Field Reconstruction Example 2</h2>
+        <div class="columns is-centered">
+          <div class="column content">
+            <p>
+              Stanford Dataset
+            </p>
+            <div class="image-comparison-wrapper" style="position: relative; width: 512px; height: 352px;">
+              <img-comparison-slider style="width: 100%; height: 100%;">
+                <img slot="first" src="./static/images/Stanford_PVSNet.png" />
+                <img slot="second" src="./static/images/Stanford_GT.png" />
+              </img-comparison-slider>
+              <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+              <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ground Truth</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--/ Matting. -->
+
+    
+
+    <!-- Ablation Study. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Results</h2>
+
+        <!-- Comparision. -->
+        <h3 class="title is-4">Blender Dataset: Different View Synthesis Methods Against PVSNet</h3>
+        <div class="content has-text-justified">
+          <p>
+            The visual comparison against TMPI, AdaPI, SinMPI on Blender Dataset.
+          </p>
+        </div>
+        <div class="content has-text-centered" style="display: flex; gap: 20px; justify-content: center;">
+          <!-- First image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 256px; height: 256px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/Classroom_PVSNet.png" />
+              <img slot="second" src="./static/images/Classroom_TMPI.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">TMPI</span>
+          </div>
+
+          <!-- Second image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 256px; height: 256px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/Classroom_PVSNet.png" />
+              <img slot="second" src="./static/images/Classroom_AdaMPI.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">AdaMPI</span>
+          </div>
+
+          <!-- Third image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 256px; height: 256px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/Classroom_PVSNet.png" />
+              <img slot="second" src="./static/images/Classroom_SinMPI.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">SinMPI</span>
+          </div>
+        </div>
+        <!--/ Comparision. -->
+
+        <!-- Comparison -->
+        <h3 class="title is-4">COCO Dataset: Different View Synthesis Methods Against PVSNet</h3>
+        <div class="content has-text-justified">
+          <p>
+            The visual comparison against SinMPI, TMPI, AdaMPI on Blender Dataset.
+          </p>
+        </div>
+        <div class="content has-text-centered" style="display: flex; gap: 20px; justify-content: center;">
+          <!-- First image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 300px; height: 300px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/PVSNet_23_source_image.png" />
+              <img slot="second" src="./static/images/tmpi_23_source_image.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">TMPI</span>
+          </div>
+
+          <!-- Second image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 300px; height: 300px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/PVSNet_23_source_image.png" />
+              <img slot="second" src="./static/images/adampi_23_source_image.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">AdaMPI</span>
+          </div>
+
+          <!-- Third image comparison -->
+          <div class="image-comparison-wrapper" style="position: relative; width: 300px; height: 300px;">
+            <img-comparison-slider style="width: 100%; height: 100%;">
+              <img slot="first" src="./static/images/PVSNet_23_source_image.png" />
+              <img slot="second" src="./static/images/sinmpi_23_source_image.png" />
+            </img-comparison-slider>
+            <span class="image-label" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">Ours</span>
+            <span class="image-label" style="position: absolute; top: 10px; right: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 2px 5px;">SinMPI</span>
+          </div>
+        </div>
+        <!--/ Comparison -->
+
+      </div>
+    </div>
+    <!--/ Ablation Study. -->
+
+    <!--- Movement Example --->
+    <h3 class="title is-4">Ablation Study: Different Positional Embedding</h3>
+      <div class="content has-text-justified">
+        <p>
+          The below example shows the NVS results when using different positional embedding methods.
+        </p>
+      </div>
+      <div class="content has-text-centered">
+        <div id="interpolation-image-wrapper">
+          Loading...
+        </div>
+        <input class="slider is-fullwidth is-large is-info"
+                id="interpolation-slider"
+                step="1" min="0" max="100" value="0" type="range">
+      </div>
+      <!---/ Movement Example --->
+
+    <!--- Supplementary --->
+    <h3 class="title is-4">Supplementary Video</h3>
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+      <iframe 
+        src="https://www.youtube.com/embed/ZZTcqOL4-WE" 
+        title="YouTube video player" 
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        allowfullscreen>
+      </iframe>
+    </div>    
+    <!---/ Supplementary --->
+
+    <br><br>
+    <!-- Concurrent Work. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Related Links</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            There's a lot of excellent work that was introduced around the same time as ours.
+          </p>
+          <p>
+            <a href="https://wbjang.github.io/nvist_webpage/">NViST: In the Wild New View Synthesis from a Single Image with Transformers</a> introduces an idea similar to as our embedding scheme.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Concurrent Work. -->
+
+  </div>
+</section>
+
+
+
+
+<!---------   CHARTS ------------>
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- FPS Rate. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">FPS Rate on RTX 2070 Super</h2>
+        <p>We compare the FPS rate on different resolutions against other methods when rendering end-to-end.</p>
+        <canvas id="fpsChart"></canvas>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const ctx = document.getElementById('fpsChart').getContext('2d');
+      const fpsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['SinMPI', 'TMPI', 'AdaMPI', 'PVSNet'],
+          datasets: [
+            {
+              label: 'FPS Rate (256x256)',
+              data: [13, 11, 4, 62],
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            },
+            {
+              label: 'FPS Rate (512x512)',
+              data: [4, 4, 3, 55],
+              backgroundColor: 'rgba(153, 102, 255, 0.5)',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'FPS',
+              },
+            },
+          },
+        },
+      });
+    </script>
+    <!--- /FPS Rate  --->
+  </div>
+</section>
+<!---------  /CHARTS ------------>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{gond2024real,
+      title={Real-Time Position-Aware View Synthesis from Single-View Input},
+      author={Gond, Manu and Zerman, Emin and Knorr, Sebastian and Sj{\"o}str{\"o}m, M{\aa}rten},
+      journal={arXiv preprint arXiv:2412.14005},
+      year={2024}
+    }</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            We thank authors of Nerfies for opensourcing their website template. Link to their: <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 </body>
 </html>
