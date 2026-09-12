@@ -7,7 +7,8 @@
 </div>
 
 # PVSNet: Real-Time Position-Aware View Synthesis from Single-View Input.
-This repo contains the supplementary materials for our paper PVSNet. The paper has been accepted, the code, checkpoint and dataset will be published shortly.
+This repo contains the supplementary materials for our paper PVSNet. The paper has been accepted, the model code and checkpoint can be fetched from the Huggingface space (demo link in header of this readme), and dataset link is also in the header and project page.
+We will update the documentation shortly, and make a clone of huggingface spaces code available on this repo.
 
 ### Supplementary Video
 [![Watch the video](https://img.youtube.com/vi/ZZTcqOL4-WE/maxresdefault.jpg)](https://youtu.be/ZZTcqOL4-WE)
