@@ -8,3 +8,12 @@ Icon?
 ._*
 .Spotlight-V100
 .Trashes
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.onnx
+*.onnx.data
+*.pth
+*.engine
+logs/
