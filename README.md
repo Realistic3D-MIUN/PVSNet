@@ -28,6 +28,8 @@ This repo contains the supplementary materials for our paper PVSNet. The paper h
 | `checkpoint_coco_pvsnet_lite_256x256.pth` | COCO | 256x256 | Lite | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_coco_pvsnet_lite_256x256.pth) |
 | `checkpoint_coco_pvsnet_lite_512x512.pth` | COCO | 512x512 | Lite | [Link] |
 | `checkpoint_coco_pvsnet_512x512.pth` | COCO | 512x512 | Regular | [Link] |
+| `checkpoint_coco_pvsnet_256x256_T.pth` | COCO | 256x256 | Regular (Translation Only)| [Link] |
+| `checkpoint_coco_pvsnet_512x512_T.pth` | COCO | 512x512 | Regular (Translation Only)| [Link] |
 | `checkpoint_best_flowers.pth` | Flowers | Variable | Light Field | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_best_flowers.pth) |
 | `checkpoint_best_stanford.pth` | Stanford | Variable | Light Field | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_best_stanford.pth) |
 
