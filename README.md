@@ -21,9 +21,9 @@ This repo contains the supplementary materials for our paper PVSNet. The paper h
 | Model Checkpoint | Dataset | Resolution | Architecture | Download Link |
 | --- | --- | --- | --- | --- |
 | `checkpoint_blender_pvsnet_256x256.pth` | Blender | 256x256 | Regular | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_blender_pvsnet_256x256.pth) |
+| `checkpoint_blender_pvsnet_512x512.pth` | Blender | 512x512 | Regular | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_blender_pvsnet_512x512.pth) |
 | `checkpoint_blender_pvsnet_lite_256x256.pth` | Blender | 256x256 | Lite | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_blender_pvsnet_lite_256x256.pth) |
 | `checkpoint_blender_pvsnet_lite_512x512.pth` | Blender | 512x512 | Lite | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_blender_pvsnet_lite_512x512.pth) |
-| `checkpoint_blender_pvsnet_512x512.pth` | Blender | 512x512 | Regular | [Link] |
 | `checkpoint_coco_pvsnet_256x256.pth` | COCO | 256x256 | Regular | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_coco_pvsnet_256x256.pth) |
 | `checkpoint_coco_pvsnet_lite_256x256.pth` | COCO | 256x256 | Lite | [Link](https://huggingface.co/3ZadeSSG/PVSNet/blob/main/checkpoint_coco_pvsnet_lite_256x256.pth) |
 | `checkpoint_coco_pvsnet_lite_512x512.pth` | COCO | 512x512 | Lite | [Link] |
