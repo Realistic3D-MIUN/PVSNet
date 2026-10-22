@@ -112,6 +112,11 @@ def parse_args():
                              help="SOAP: do not merge tensor dims before preconditioning")
     optim_group.add_argument("--precondition_1d", action="store_true",
                              help="SOAP: also precondition 1D parameters")
+    optim_group.add_argument("--soap_min_rank_ratio", type=float, default=0.5,
+                             help="SOAP: skip preconditioning for dimensions whose "
+                                  "Gram matrix rank falls below this fraction of its "
+                                  "size, since their eigenvectors are numerical noise; "
+                                  "0 reproduces the reference implementation")
     optim_group.add_argument("--soap_update_clip", type=float, default=10.0,
                              help="SOAP: element-wise bound on the Adam ratio, which "
                                   "stops a stale second moment from producing an "
@@ -363,6 +368,7 @@ def build_optimizer(args, model):
             merge_dims=not args.no_merge_dims,
             precondition_1d=args.precondition_1d,
             update_clip=args.soap_update_clip,
+            min_rank_ratio=args.soap_min_rank_ratio,
             data_format="channels_last" if args.channels_last else "channels_first",
         )
     return torch.optim.AdamW(

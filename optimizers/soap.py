@@ -40,6 +40,14 @@ class SOAP(optim.Optimizer):
             preconditioner can leave the two inconsistent and produce updates many
             orders of magnitude too large. A well-conditioned ratio stays below
             ``1 / sqrt(1 - beta2)``, so this only ever truncates numerical garbage.
+        min_rank_ratio: Leave a dimension unpreconditioned when its Gram matrix
+            has a numerical rank below this fraction of its size, or 0 to
+            precondition every dimension as the reference implementation does.
+            Such dimensions arise when a tensor is small enough that ``merge_dims``
+            collapses it entirely (the Gram matrix is then estimated from rank-one
+            samples) or when a layer's inputs are linearly dependent; their
+            eigenvectors are noise and rotating against them diverges.
+        rank_tol: Relative eigenvalue threshold used for that rank estimate.
     """
 
     def __init__(
@@ -58,6 +66,8 @@ class SOAP(optim.Optimizer):
         data_format: str = "channels_first",
         correct_bias: bool = True,
         update_clip: float = 10.0,
+        min_rank_ratio: float = 0.5,
+        rank_tol: float = 1e-6,
     ):
         defaults = {
             "lr": lr,
@@ -75,6 +85,8 @@ class SOAP(optim.Optimizer):
         }
         super().__init__(params, defaults)
         self._data_format = data_format
+        self._min_rank_ratio = min_rank_ratio
+        self._rank_tol = rank_tol
 
     def merge_dims(self, grad, max_precond_dim):
         """Merge dimensions until their product exceeds ``max_precond_dim``."""
@@ -328,6 +340,36 @@ class SOAP(optim.Optimizer):
                 grad = grad.reshape(original_shape)
         return grad
 
+    def is_degenerate(self, eigenvalues):
+        """
+        Whether a preconditioner is too rank-deficient to rotate against.
+
+        A dimension whose Gram matrix has far fewer non-negligible eigenvalues
+        than its size has a null space that float32 cannot resolve, so the
+        eigenvectors spanning it are numerical noise. Rotating the first moment
+        with such a basis is not norm-preserving and makes the Adam ratio blow up.
+        Dimensions that fail this test are left unpreconditioned, which reduces
+        SOAP to plain Adam for them.
+        """
+        if self._min_rank_ratio <= 0:
+            return False
+        eigenvalues = eigenvalues.abs()
+        largest = eigenvalues.max()
+        if largest <= 0:
+            return True
+        rank = int((eigenvalues > largest * self._rank_tol).sum())
+        return rank < self._min_rank_ratio * eigenvalues.numel()
+
+    def eigh(self, matrix):
+        """Eigendecomposition with a float64 retry, returning (eigenvalues, Q)."""
+        damping = 1e-30 * torch.eye(matrix.shape[0], device=matrix.device)
+        try:
+            eigenvalues, Q = torch.linalg.eigh(matrix + damping)
+        except Exception:
+            eigenvalues, Q = torch.linalg.eigh(matrix.to(torch.float64) + damping)
+        # Descending eigenvalue order, matching the reference implementation.
+        return torch.flip(eigenvalues, [0]), torch.flip(Q, [1])
+
     def get_orthogonal_matrix(self, mat):
         """Computes the eigenbases of the preconditioner with ``torch.linalg.eigh``."""
         final = []
@@ -338,18 +380,10 @@ class SOAP(optim.Optimizer):
 
             original_dtype = m.data.dtype
             original_device = m.data.device
-            matrix = m.data.float()
-
-            try:
-                _, Q = torch.linalg.eigh(
-                    matrix + 1e-30 * torch.eye(matrix.shape[0], device=matrix.device)
-                )
-            except Exception:
-                _, Q = torch.linalg.eigh(
-                    matrix.to(torch.float64)
-                    + 1e-30 * torch.eye(matrix.shape[0], device=matrix.device)
-                )
-            Q = torch.flip(Q, [1])
+            eigenvalues, Q = self.eigh(m.data.float())
+            if self.is_degenerate(eigenvalues):
+                final.append([])
+                continue
             final.append(Q.to(device=original_device, dtype=original_dtype))
         return final
 
@@ -379,9 +413,24 @@ class SOAP(optim.Optimizer):
             original_dtype = m.data.dtype
             original_device = m.data.device
             m = m.data.float()
+
+            if len(o) == 0:
+                # Skipped last time, so there is no basis to power-iterate from.
+                # Re-test it from scratch in case more gradients have made the
+                # preconditioner well conditioned since.
+                eigenvalues, Q = self.eigh(m)
+                if self.is_degenerate(eigenvalues):
+                    final.append([])
+                else:
+                    final.append(Q.to(device=original_device, dtype=original_dtype))
+                continue
+
             o = o.data.float()
 
             est_eig = torch.diag(o.T @ m @ o)
+            if self.is_degenerate(est_eig):
+                final.append([])
+                continue
             sort_idx = torch.argsort(est_eig, descending=True)
             # exp_avg_sq lives in the rotated basis, so it has to follow the
             # reordering of the eigenvectors.
