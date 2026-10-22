@@ -115,15 +115,47 @@ Run the TRT-optimized version for faster light field rendering (requires running
 python app_light_field_trt.py
 ```
 
-# 3. Testing and Evaluation
+# 3. Training
 
-## 3.A. Testing Dataset Setup
+`train.py` trains the view-synthesis model on the Blender dataset. It expects the split files
+(`lf_train.txt`, `lf_validate.txt`) in the project root and the dataset one level up
+(`../dataset/Blender_RGB`), the same layout the evaluation script uses.
+
+```bash
+# Single GPU, 256x256, regular architecture
+python train.py --resolution 256x256 --architecture regular
+
+# All 8 GPUs (one process per GPU, DistributedDataParallel)
+torchrun --standalone --nproc_per_node=8 train.py --resolution 256x256
+
+# Resume (optimizer, scheduler and epoch are restored from the sibling *_training_state.pth)
+python train.py --resume ./checkpoint/<run_name>/checkpoint_blender_pvsnet_256x256.pth
+```
+
+* **Losses:** MS-SSIM + L1 mix, L2, focal frequency, VGG19 perceptual and DINOv2 feature loss.
+  Each weight is overridable (`--w_msssim_l1`, `--w_l2`, `--w_ffl`, `--w_vgg`, `--w_dino`);
+  setting a weight to 0 skips that term entirely, including its backbone download.
+* **Optimizer / schedule:** SOAP (`--optimizer soap`, or `adamw` as a lighter fallback) with
+  either StepLR (`--scheduler step`, default) or cosine annealing (`--scheduler cosine`).
+* **Logging:** scalars, throughput and source/prediction/ground-truth image grids go to
+  TensorBoard, mirrored as text in `./logs/<run_name>/train_log.txt`.
+  `tensorboard --logdir ./logs`
+* **Checkpoints:** written only when the tracked validation metric improves
+  (`--best_metric`, default MS-SSIM). Weights are saved as a bare `state_dict` under the same
+  filename convention `test.py` parses, so evaluation and the inference apps work unchanged;
+  optimizer/scheduler state lives in a separate `*_training_state.pth` file.
+
+Run `python train.py --help` for the full argument list.
+
+# 4. Testing and Evaluation
+
+## 4.A. Testing Dataset Setup
 To run evaluations natively, you need to download the Blender test dataset:
 1. Download the test data zip file from [URL_HERE] and extract it.
 2. Put the `lf_test.txt` file in the project root directory (`./PVSNet/lf_test.txt`).
 3. Put the extracted dataset folder exactly one level up, inside the `dataset` directory (e.g. `../dataset/Blender_RGB`).
 
-## 3.B. Run Evaluation
+## 4.B. Run Evaluation
 The testing script calculates MS-SSIM, SSIM, PSNR, LPIPS, DISTS, and VIF metrics on the fly.
 ```bash
 python test.py --checkpoint ./checkpoint/checkpoint_blender_pvsnet_lite_512x512.pth
