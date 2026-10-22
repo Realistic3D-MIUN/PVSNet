@@ -97,7 +97,10 @@ def parse_args():
                              choices=["soap", "adamw"],
                              help="adamw is a lighter fallback when SOAP's preconditioners "
                                   "do not fit on a small GPU")
-    optim_group.add_argument("--lr", type=float, default=3e-3)
+    optim_group.add_argument("--lr", type=float, default=1e-4,
+                             help="SOAP's own default of 3e-3 is tuned for transformers "
+                                  "and diverges on this architecture, whose residual "
+                                  "blocks carry almost no normalisation")
     optim_group.add_argument("--betas", type=float, nargs=2, default=(0.95, 0.95))
     optim_group.add_argument("--weight_decay", type=float, default=0.01)
     optim_group.add_argument("--eps", type=float, default=1e-8)
@@ -109,8 +112,16 @@ def parse_args():
                              help="SOAP: do not merge tensor dims before preconditioning")
     optim_group.add_argument("--precondition_1d", action="store_true",
                              help="SOAP: also precondition 1D parameters")
+    optim_group.add_argument("--soap_update_clip", type=float, default=10.0,
+                             help="SOAP: element-wise bound on the Adam ratio, which "
+                                  "stops a stale second moment from producing an "
+                                  "enormous update after an eigenbasis refresh; 0 "
+                                  "reproduces the reference implementation exactly")
     optim_group.add_argument("--grad_clip", type=float, default=1.0,
                              help="Gradient norm clipping; 0 disables it")
+    optim_group.add_argument("--skip_limit", type=int, default=25,
+                             help="Abort after this many consecutive non-finite steps; "
+                                  "0 keeps skipping forever")
     optim_group.add_argument("--amp", type=str, default="bf16",
                              choices=["off", "bf16", "fp16"],
                              help="Mixed precision for the forward/backward pass")
@@ -351,6 +362,7 @@ def build_optimizer(args, model):
             max_precond_dim=args.max_precond_dim,
             merge_dims=not args.no_merge_dims,
             precondition_1d=args.precondition_1d,
+            update_clip=args.soap_update_clip,
             data_format="channels_last" if args.channels_last else "channels_first",
         )
     return torch.optim.AdamW(
@@ -723,6 +735,7 @@ def main():
 
     model.train()
     epochs_without_improvement = 0
+    skipped_steps = 0
     LOGGER.info("Starting training at epoch %d for %d epochs", start_epoch, args.epochs)
 
     for epoch in range(start_epoch, args.epochs):
@@ -733,6 +746,7 @@ def main():
         epoch_batches = 0
         window_start = time.time()
         window_images = 0
+        last_grad_norm = float("nan")
         optimizer.zero_grad(set_to_none=True)
 
         for batch_index, batch in enumerate(train_loader):
@@ -757,22 +771,53 @@ def main():
                 # sensitive to reduced precision.
                 prediction = prediction.float()
                 loss, components = criterion(prediction, target.float())
-                scaler.scale(loss / args.grad_accum_steps).backward()
+                loss_is_finite = torch.isfinite(loss).item()
+                if loss_is_finite:
+                    scaler.scale(loss / args.grad_accum_steps).backward()
 
-            if is_accum_boundary:
+            if not loss_is_finite:
+                # Backward is skipped so .grad never sees the bad batch.
+                optimizer.zero_grad(set_to_none=True)
+                skipped_steps += 1
+                LOGGER.warning("Non-finite loss at step %d; skipping the update",
+                               global_step + 1)
+            elif is_accum_boundary:
+                parameters = unwrap_model(model).parameters()
                 if args.grad_clip > 0:
                     scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(
-                        unwrap_model(model).parameters(), args.grad_clip
+                    grad_norm = torch.nn.utils.clip_grad_norm_(parameters, args.grad_clip)
+                else:
+                    grad_norm = torch.nn.utils.get_total_norm(
+                        [p.grad for p in parameters if p.grad is not None]
                     )
-                scaler.step(optimizer)
-                scaler.update()
+                # A single inf/nan gradient would otherwise be spread across every
+                # parameter by the clipping rescale, which makes the weights NaN
+                # for good. Under bf16 there is no GradScaler to catch that.
+                if torch.isfinite(grad_norm):
+                    scaler.step(optimizer)
+                    scaler.update()
+                    skipped_steps = 0
+                else:
+                    skipped_steps += 1
+                    LOGGER.warning(
+                        "Non-finite gradient norm at step %d; skipping the update",
+                        global_step + 1,
+                    )
+                last_grad_norm = grad_norm.item()
                 optimizer.zero_grad(set_to_none=True)
                 scheduler.step()
                 global_step += 1
 
-            epoch_loss += loss.item()
-            epoch_batches += 1
+            if args.skip_limit > 0 and skipped_steps >= args.skip_limit:
+                raise RuntimeError(
+                    f"{skipped_steps} consecutive non-finite updates at step "
+                    f"{global_step}. The run has diverged; lower --lr (or raise "
+                    "--warmup_steps) and restart from the last good checkpoint."
+                )
+
+            if loss_is_finite:
+                epoch_loss += loss.item()
+                epoch_batches += 1
             window_images += source.shape[0] * world_size
 
             if is_main and is_accum_boundary and global_step % args.log_interval == 0:
@@ -782,6 +827,7 @@ def main():
                 for name, value in components.items():
                     writer.add_scalar(f"train/{name}", value.item(), global_step)
                 writer.add_scalar("train/lr", scheduler.get_last_lr()[0], global_step)
+                writer.add_scalar("train/grad_norm", last_grad_norm, global_step)
                 writer.add_scalar("train/images_per_sec", throughput, global_step)
                 peak_memory = (
                     torch.cuda.max_memory_allocated(device) / 1e9
@@ -793,11 +839,11 @@ def main():
                     f"{name}={value.item():.4f}" for name, value in components.items()
                 )
                 LOGGER.info(
-                    "epoch %d/%d step %d (%d/%d) | loss %.4f | %s | lr %.2e | %.1f img/s"
-                    " | peak %.1fGB",
+                    "epoch %d/%d step %d (%d/%d) | loss %.4f | %s | lr %.2e"
+                    " | grad %.3f | %.1f img/s | peak %.1fGB",
                     epoch + 1, args.epochs, global_step, batch_index + 1,
                     len(train_loader), loss.item(), component_text,
-                    scheduler.get_last_lr()[0], throughput, peak_memory,
+                    scheduler.get_last_lr()[0], last_grad_norm, throughput, peak_memory,
                 )
                 window_start = time.time()
                 window_images = 0

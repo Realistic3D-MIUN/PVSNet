@@ -33,6 +33,13 @@ class SOAP(optim.Optimizer):
             ``precondition_frequency`` (~100), hurts for small (~10).
         data_format: ``channels_first`` (NCHW) or ``channels_last`` (NHWC).
         correct_bias: Whether to apply Adam bias correction.
+        update_clip: Element-wise bound on the Adam ratio before it is rotated
+            back, or 0 to disable. Not part of the reference implementation: when
+            the eigenbasis is refreshed, ``exp_avg`` is rotated into the new basis
+            while ``exp_avg_sq`` is only reordered, so a rank-deficient
+            preconditioner can leave the two inconsistent and produce updates many
+            orders of magnitude too large. A well-conditioned ratio stays below
+            ``1 / sqrt(1 - beta2)``, so this only ever truncates numerical garbage.
     """
 
     def __init__(
@@ -50,6 +57,7 @@ class SOAP(optim.Optimizer):
         normalize_grads: bool = False,
         data_format: str = "channels_first",
         correct_bias: bool = True,
+        update_clip: float = 10.0,
     ):
         defaults = {
             "lr": lr,
@@ -63,6 +71,7 @@ class SOAP(optim.Optimizer):
             "precondition_1d": precondition_1d,
             "normalize_grads": normalize_grads,
             "correct_bias": correct_bias,
+            "update_clip": update_clip,
         }
         super().__init__(params, defaults)
         self._data_format = data_format
@@ -166,8 +175,12 @@ class SOAP(optim.Optimizer):
                     bias_correction2 = 1.0 - beta2 ** (state["step"])
                     step_size = step_size * (bias_correction2**0.5) / bias_correction1
 
+                update = exp_avg_projected / denom
+                if group["update_clip"] > 0:
+                    update = update.clamp(-group["update_clip"], group["update_clip"])
+
                 norm_grad = self.project_back(
-                    exp_avg_projected / denom,
+                    update,
                     state,
                     merge_dims=group["merge_dims"],
                     max_precond_dim=group["max_precond_dim"],
